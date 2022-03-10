@@ -19,6 +19,7 @@ public action update(num delta) {
 public action onPlayerSpawn(str id) {
 	obj player = GAME.PLAYERS.findByID(id);
 	player.damager = "";
+	player.damagee = "";
 }
 
 # Player died
@@ -31,6 +32,10 @@ public action onPlayerDamage(str id, str doerID, num amount) {
 	obj player = GAME.PLAYERS.findByID(id);
 	(num) player.health += amount;
 	player.damager = doerID;
+	obj damager = GAME.PLAYERS.findByID(id);
+	player.damagee = id;
+	GAME.NETWORK.send('pm', {d: doerID}, id);
+	GAME.NETWORK.send('dm', {d: id}, doerID);
 }
 
 # Player update
@@ -45,6 +50,17 @@ public action onPlayerUpdate(str id, num delta, obj inputs) {
         (num) player.velocity.z -= zComp;
 	
 		player.damager = "";
+	}
+
+	if((str) player.damagee != ""){
+		obj damagee = GAME.PLAYERS.findByID(player.damagee);
+		
+		num zComp = (num) config.force * delta * (Math.cos((num)player.rotation.x));
+        num xComp = (num) config.force * delta * (Math.sin((num)player.rotation.x));
+        (num) damagee.velocity.x -= xComp;
+        (num) damagee.velocity.z -= zComp;
+
+		player.damagee = "";
 	}
 }
 
