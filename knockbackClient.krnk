@@ -25,6 +25,8 @@ public action onPlayerSpawn(str id) {
 	obj player = GAME.PLAYERS.findByID(id);
 	player.damager = "";
 	player.registerSyncValues('damager');
+	player.damagee = "";
+	player.registerSyncValues('damagee');
 }
 
 # Player died
@@ -45,6 +47,18 @@ public action onPlayerUpdate(str id, num delta, obj inputs) {
 	
 		player.damager = "";
 	}
+
+	if((str) player.damagee != ""){
+		obj damagee = GAME.PLAYERS.findByID(player.damagee);
+		
+		num zComp = (num) config.force * delta * (Math.cos((num)player.rotation.x));
+        num xComp = (num) config.force * delta * (Math.sin((num)player.rotation.x));
+        (num) damagee.velocity.x -= xComp;
+        (num) damagee.velocity.z -= zComp;
+
+		player.damagee = "";
+	}
+	GAME.log(player.damager);
 }
 
 # User pressed a key
@@ -99,5 +113,11 @@ public action onDIVClicked(str id) {
 
 # Client receives network message
 public action onNetworkMessage(str id, obj data) {
-
+	obj player = GAME.PLAYERS.getSelf();
+	if(id == 'pm'){
+		player.damager = (str) data.d;
+	}
+	if(id == 'dm'){
+		player.damagee = (str) data.d;
+	}
 }
